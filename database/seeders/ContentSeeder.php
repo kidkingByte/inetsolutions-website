@@ -27,7 +27,7 @@ class ContentSeeder extends Seeder
                 'title' => 'Understanding Internet Speed: Mbps vs MB/s',
                 'category' => 'Technology',
                 'excerpt' => 'Why your 20 Mbps connection does not download at 20 MB per second.',
-                'body' => "Internet speeds are advertised in megabits per second (Mbps), while downloads are usually shown in megabytes per second (MB/s). One byte equals eight bits, so 20 Mbps is roughly 2.5 MB/s in ideal conditions. Real-world speeds are lower due to network overhead, congestion and Wi-Fi conditions. Understanding this difference helps you choose the right package and set realistic expectations.",
+                'body' => 'Internet speeds are advertised in megabits per second (Mbps), while downloads are usually shown in megabytes per second (MB/s). One byte equals eight bits, so 20 Mbps is roughly 2.5 MB/s in ideal conditions. Real-world speeds are lower due to network overhead, congestion and Wi-Fi conditions. Understanding this difference helps you choose the right package and set realistic expectations.',
             ],
         ];
 
