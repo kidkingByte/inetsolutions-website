@@ -25,3 +25,13 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local tooling (Claude Code worktrees and preview config) — never commit
+/.claude/worktrees/
+/.claude/launch.json
+/.claude/settings.local.json
+
+# Archives/backups of the project (can contain .env, databases, vendor)
+*.zip
+*.tar.gz
+__MACOSX/
