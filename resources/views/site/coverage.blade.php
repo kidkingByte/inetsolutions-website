@@ -1,6 +1,6 @@
 @php
     $services = ['home' => 'Home Internet', 'business' => 'Business Internet', 'enterprise' => 'Enterprise Internet', 'wifi' => 'Wi-Fi Solution'];
-    $servedRegions = array_keys(\App\Models\CoverageArea::locationTree());
+    $servedRegions = \App\Models\CoverageArea::servedRegions();
 @endphp
 <x-site-layout>
     <x-slot name="title">Check Coverage — {{ site('company_name') }}</x-slot>

@@ -5,7 +5,7 @@
     // visitors outside known areas can still ask (their request becomes a coverage lead).
     // A level switches to free text only once its parent is chosen and has nothing listed.
     $tree = \App\Models\CoverageArea::locationTree();
-    $served = array_keys($tree);
+    $served = \App\Models\CoverageArea::servedRegions();
     $others = array_diff(\App\Models\CoverageArea::TANZANIA_REGIONS, $served);
     $otherGroups = array_filter([
         'Zanzibar' => array_values(array_intersect(\App\Models\CoverageArea::ZANZIBAR_REGIONS, $others)),

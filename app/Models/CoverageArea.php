@@ -81,6 +81,19 @@ class CoverageArea extends Model
         return $tree;
     }
 
+    /**
+     * Regions with at least one available or coming-soon area — "Where we operate".
+     * (locationTree() also lists not-available areas so their districts/wards stay selectable.)
+     *
+     * @return list<string>
+     */
+    public static function servedRegions(): array
+    {
+        return static::query()->active()->pluck('region')
+            ->map(fn ($region) => static::canonicalRegion($region))
+            ->unique()->sort()->values()->all();
+    }
+
     /** Match a typed region to the official spelling so "dar es salaam" and "Dar es Salaam" group together. */
     public static function canonicalRegion(string $region): string
     {

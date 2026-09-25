@@ -218,6 +218,17 @@ class WebsiteTest extends TestCase
         $this->assertSame(['Mkoani'], $region['places']);
     }
 
+    public function test_regions_marked_not_available_are_not_listed_as_served(): void
+    {
+        CoverageArea::create(['region' => 'Kusini Unguja', 'status' => 'not_available']);
+        CoverageArea::create(['region' => 'Kaskazini Pemba', 'status' => 'available']);
+
+        $this->assertSame(['Kaskazini Pemba'], CoverageArea::servedRegions());
+        $this->get('/coverage')->assertOk()
+            ->assertSeeInOrder(['Where we operate', 'Kaskazini Pemba', 'Zanzibar', 'Kusini Unguja'], false);
+        $this->postJson('/coverage/check', ['region' => 'Kusini Unguja'])->assertJson(['status' => 'not_available']);
+    }
+
     public function test_map_link_preselects_the_region_in_the_checker(): void
     {
         $this->get('/coverage?region=Kaskazini+Pemba')->assertOk()
