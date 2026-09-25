@@ -10,7 +10,7 @@ class CoverageController extends Controller
 {
     public function index()
     {
-        return view('site.coverage');
+        return view('site.coverage', ['mapPoints' => CoverageArea::mapPoints()]);
     }
 
     public function check(Request $request)
@@ -60,7 +60,7 @@ class CoverageController extends Controller
 
         $request->session()->flashInput($request->all());
 
-        return view('site.coverage', ['result' => $result, 'input' => $data]);
+        return view('site.coverage', ['result' => $result, 'input' => $data, 'mapPoints' => CoverageArea::mapPoints()]);
     }
 
     public function notify(Request $request)

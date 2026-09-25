@@ -5,7 +5,7 @@
 <x-site-layout>
     <x-slot name="title">Check Coverage — {{ site('company_name') }}</x-slot>
 
-    <x-site.page-banner eyebrow="Coverage" title="Is INET Available in Your Area?" subtitle="Choose your location to check whether INET SOLUTIONS LTD internet services are available where you are.">
+    <x-site.page-banner eyebrow="Coverage" title="Is INET Available in Your Area?" subtitle="INET serves Zanzibar — across Unguja and Pemba. Choose your location to check availability where you are.">
         @if($servedRegions)
             <div class="mt-10 flex flex-wrap items-center gap-2">
                 <span class="mr-2 text-sm text-slate-600">Where we operate:</span>
@@ -47,13 +47,14 @@
 
                 @include('site.partials.alerts')
 
-                <form method="POST" action="{{ route('coverage.check') }}" @submit.prevent="check($el)" class="card space-y-8">
+                <form id="check" method="POST" action="{{ route('coverage.check') }}" @submit.prevent="check($el)" class="card scroll-mt-32 space-y-8">
                     @csrf
                     <fieldset>
                         <legend class="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">
                             <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-xs">1</span> Your location
                         </legend>
-                        <x-site.location-picker class="mt-5" id-prefix="cov" />
+                        {{-- ?region= is set by the map's "Check this area" links --}}
+                        <x-site.location-picker class="mt-5" id-prefix="cov" :region="request('region')" />
                         <div class="mt-5">
                             <x-site.field name="street" label="Street (optional)" placeholder="Street or nearby landmark" />
                         </div>
@@ -84,6 +85,30 @@
             </div>
 
             <aside class="space-y-5 lg:col-span-5">
+                {{-- Coverage map (Leaflet, loaded only on this page) --}}
+                @if($mapPoints)
+                    <div class="card !p-0 overflow-hidden">
+                        <div class="flex items-center justify-between gap-3 px-5 pb-3 pt-5">
+                            <h2 class="text-lg font-bold">Coverage map</h2>
+                            <span class="text-xs text-slate-500">Tap an area for details</span>
+                        </div>
+                        <div data-coverage-map data-points="{{ json_encode($mapPoints) }}" data-check-url="{{ route('coverage') }}"
+                             class="relative z-0 h-80 bg-brand-light sm:h-96" role="region" aria-label="Map of the areas INET serves">
+                            <noscript><p class="p-5 text-sm text-slate-500">Turn on JavaScript to see the map.</p></noscript>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-slate-100 px-5 py-3 text-xs text-slate-600">
+                            <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-full border-2 border-white bg-brand-600 ring-1 ring-brand-600"></span> Available</span>
+                            <span class="flex items-center gap-2"><span class="h-3 w-3 rounded-full border-2 border-white bg-amber-500 ring-1 ring-amber-500"></span> Coming soon</span>
+                        </div>
+                        {{-- Text version of the map for screen readers and no-JS visitors --}}
+                        <ul class="sr-only">
+                            @foreach($mapPoints as $point)
+                                <li>{{ $point['title'] }}: {{ $point['status'] === 'available' ? 'available' : 'coming soon' }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="card reveal">
                     <span class="icon-tile"><x-site.icon name="map-pin" class="h-6 w-6" /></span>
                     <h2 class="mt-5 text-lg font-bold">How the check works</h2>

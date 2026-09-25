@@ -38,3 +38,9 @@ if (revealTargets.length && 'IntersectionObserver' in window) {
 } else {
     revealTargets.forEach(show);
 }
+
+// Coverage map: Leaflet is split into its own chunk and only downloaded on pages that have a map.
+const maps = document.querySelectorAll('[data-coverage-map]');
+if (maps.length) {
+    import('./coverage-map').then(({ mountCoverageMap }) => maps.forEach(mountCoverageMap));
+}

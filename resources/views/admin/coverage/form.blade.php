@@ -32,6 +32,20 @@
             <label class="block text-sm font-medium">Street</label>
             <input name="street" value="{{ old('street', $area->street) }}" class="mt-1 w-full rounded-lg border-slate-300">
         </div>
+        <div class="sm:col-span-2 rounded-xl bg-slate-50 p-4">
+            <p class="text-sm font-medium">Map position <span class="font-normal text-slate-500">(optional)</span></p>
+            <p class="mt-1 text-xs text-slate-500">Leave blank to show this area at its region's centre on the website map. For an exact pin, right-click the place in Google Maps and click the coordinates to copy them (e.g. -5.2459, 39.7666).</p>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600" for="latitude">Latitude</label>
+                    <input id="latitude" name="latitude" inputmode="decimal" value="{{ old('latitude', $area->latitude) }}" placeholder="-6.1659" class="mt-1 w-full rounded-lg border-slate-300">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600" for="longitude">Longitude</label>
+                    <input id="longitude" name="longitude" inputmode="decimal" value="{{ old('longitude', $area->longitude) }}" placeholder="39.2026" class="mt-1 w-full rounded-lg border-slate-300">
+                </div>
+            </div>
+        </div>
         <div>
             <label class="block text-sm font-medium">Service type</label>
             <input name="service_type" value="{{ old('service_type', $area->service_type) }}" placeholder="e.g. Home Fibre" class="mt-1 w-full rounded-lg border-slate-300">
