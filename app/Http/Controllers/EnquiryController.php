@@ -21,10 +21,6 @@ class EnquiryController extends Controller
     {
         $data = $request->validate($this->connectionRules(), $this->messages());
 
-        if ($request->hasFile('attachment')) {
-            $data['attachment'] = $request->file('attachment')->store('enquiries', 'public');
-        }
-
         Enquiry::create($data + [
             'type' => $this->normalizeInquiryType($request->input('type')),
             'source' => $request->path(),
@@ -76,7 +72,8 @@ class EnquiryController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            $data['attachment'] = $request->file('attachment')->store('enquiries', 'public');
+            // Private disk: customer files are only reachable through the admin download route.
+            $data['attachment'] = $request->file('attachment')->store('enquiries', 'local');
         }
 
         Enquiry::create($data + [

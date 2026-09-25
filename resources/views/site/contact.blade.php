@@ -1,63 +1,67 @@
+@php
+    $wa = preg_replace('/[^0-9]/', '', site('whatsapp', ''));
+    $channels = [
+        ['phone', 'Phone', site('phone'), 'tel:'.preg_replace('/\s+/', '', site('phone'))],
+        ['mail', 'General enquiries', site('email'), 'mailto:'.site('email')],
+        ['support', 'Support', site('support_email'), 'mailto:'.site('support_email')],
+        ['building', 'Sales', site('sales_email'), 'mailto:'.site('sales_email')],
+    ];
+@endphp
 <x-site-layout>
     <x-slot name="title">Contact Us — {{ site('company_name') }}</x-slot>
-    <x-site.page-banner title="Get in Touch With INET" :subtitle="'Talk to us about connectivity for your home, business or organization.'" />
 
-    <section class="py-20 bg-white">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-3 gap-12">
-            <div class="lg:col-span-1 space-y-6">
-                <div>
-                    <h3 class="font-bold text-brand-950">{{ site('company_name') }}</h3>
-                    <p class="mt-1 text-sm text-slate-600">{{ site('address') }}</p>
-                </div>
-                <div>
-                    <p class="text-sm text-slate-500">Phone</p>
-                    <a href="tel:{{ preg_replace('/\s+/','', site('phone')) }}" class="font-semibold text-brand-700">{{ site('phone') }}</a>
-                </div>
-                <div>
-                    <p class="text-sm text-slate-500">Email</p>
-                    <a href="mailto:{{ site('email') }}" class="font-semibold text-brand-700">{{ site('email') }}</a>
-                </div>
-                <div>
-                    <p class="text-sm text-slate-500">Working Hours</p>
-                    <p class="text-sm text-slate-700 whitespace-pre-line">{!! nl2br(e(site('working_hours'))) !!}</p>
-                </div>
-                <a href="https://wa.me/{{ preg_replace('/[^0-9]/','', site('whatsapp','')) }}" target="_blank" rel="noopener" class="inline-flex rounded-lg bg-green-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-600">Chat on WhatsApp</a>
-            </div>
+    <x-site.page-banner eyebrow="Contact" title="Get in Touch With INET" subtitle="Talk to us about connectivity for your home, business or organization." />
 
-            <div class="lg:col-span-2">
+    <section class="section">
+        <div class="container-x grid gap-12 lg:grid-cols-12">
+            <aside class="space-y-5 lg:col-span-5">
+                <div class="card reveal">
+                    <h2 class="text-lg font-bold">{{ site('company_name') }}</h2>
+                    <p class="mt-2 flex items-center gap-2 text-sm text-slate-500"><x-site.icon name="map-pin" class="h-4 w-4 text-brand-600" /> {{ site('address') }}</p>
+                    <ul class="mt-6 divide-y divide-slate-200">
+                        @foreach($channels as [$icon, $label, $value, $href])
+                            @if($value)
+                                <li>
+                                    <a href="{{ $href }}" class="group flex items-center gap-4 py-4">
+                                        <span class="icon-tile h-10 w-10"><x-site.icon :name="$icon" class="h-5 w-5" /></span>
+                                        <span class="flex-1">
+                                            <span class="block text-xs text-slate-500">{{ $label }}</span>
+                                            <span class="block font-semibold text-ink group-hover:text-brand-700">{{ $value }}</span>
+                                        </span>
+                                        <x-site.icon name="arrow-right" class="h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-brand-600" />
+                                    </a>
+                                </li>
+                            @endif
+                        @endforeach
+                    </ul>
+                    @if($wa)
+                        <a href="https://wa.me/{{ $wa }}?text={{ rawurlencode('Hello INET Solutions, I would like to know more about your internet services.') }}" target="_blank" rel="noopener" class="btn-whatsapp mt-4 w-full"><x-site.icon name="whatsapp" class="h-4 w-4" /> Chat With Us on WhatsApp</a>
+                    @endif
+                </div>
+                <div class="card reveal">
+                    <h2 class="flex items-center gap-2 text-lg font-bold"><x-site.icon name="clock" class="h-5 w-5 text-brand-600" /> Working Hours</h2>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        @foreach(preg_split('/\r?\n/', trim(site('working_hours', ''))) as $line)
+                            @php [$days, $hours] = array_pad(explode(':', $line, 2), 2, ''); @endphp
+                            <li class="flex justify-between gap-4 border-b border-slate-100 pb-2 last:border-0"><span class="text-slate-500">{{ trim($days) }}</span><span class="text-right font-medium text-ink">{{ trim($hours) }}</span></li>
+                        @endforeach
+                    </ul>
+                </div>
+            </aside>
+
+            <div class="lg:col-span-7">
                 @include('site.partials.alerts')
-                <form method="POST" action="{{ route('contact.store') }}" class="mt-4 space-y-4">
+                <form method="POST" action="{{ route('contact.store') }}" class="card space-y-5">
                     @csrf
-                    <div class="grid sm:grid-cols-2 gap-4">
-                        <div>
-                            <x-input-label for="full_name" value="Full Name *" />
-                            <x-text-input id="full_name" name="full_name" type="text" class="mt-1 block w-full" :value="old('full_name')" required />
-                            <x-input-error :messages="$errors->get('full_name')" class="mt-1" />
-                        </div>
-                        <div>
-                            <x-input-label for="phone" value="Phone *" />
-                            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone')" required />
-                            <x-input-error :messages="$errors->get('phone')" class="mt-1" />
-                        </div>
+                    <h2 class="text-2xl font-bold">Send us a message</h2>
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <x-site.field name="full_name" label="Full Name" required autocomplete="name" />
+                        <x-site.field name="phone" label="Phone Number" type="tel" required autocomplete="tel" />
+                        <x-site.field name="email" label="Email" type="email" autocomplete="email" />
+                        <x-site.field name="subject" label="Subject" required />
                     </div>
-                    <div class="grid sm:grid-cols-2 gap-4">
-                        <div>
-                            <x-input-label for="email" value="Email" />
-                            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email')" />
-                            <x-input-error :messages="$errors->get('email')" class="mt-1" />
-                        </div>
-                        <div>
-                            <x-input-label for="subject" value="Subject *" />
-                            <x-text-input id="subject" name="subject" type="text" class="mt-1 block w-full" :value="old('subject')" required />
-                            <x-input-error :messages="$errors->get('subject')" class="mt-1" />
-                        </div>
-                    </div>
-                    <div>
-                        <x-input-label for="message" value="Message *" />
-                        <textarea id="message" name="message" rows="5" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-600 focus:ring-brand-600" required>{{ old('message') }}</textarea>
-                        <x-input-error :messages="$errors->get('message')" class="mt-1" />
-                    </div>
-                    <button type="submit" class="rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700">Send Message</button>
+                    <x-site.field name="message" label="Message" type="textarea" required rows="6" />
+                    <button type="submit" class="btn-primary w-full py-3.5 sm:w-auto">Send Message <x-site.icon name="arrow-right" class="h-4 w-4" /></button>
                 </form>
             </div>
         </div>

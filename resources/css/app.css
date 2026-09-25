@@ -3,3 +3,148 @@
 @tailwind utilities;
 
 [x-cloak] { display: none !important; }
+
+@layer base {
+    .site {
+        @apply bg-white text-slate-600 antialiased;
+    }
+    .site ::selection { @apply bg-brand-100 text-ink; }
+    /* :where() keeps specificity at zero so utilities like text-white still win */
+    :where(.site) :where(h1, h2, h3, h4) { @apply text-ink tracking-tight; }
+    .site :focus-visible { @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white; }
+    /* Grid/flex children may shrink below their content (long emails etc.) instead of causing sideways scroll */
+    :where(.site) :where(.grid > *) { min-width: 0; }
+    :where(.site) a[href^="mailto:"] { overflow-wrap: anywhere; }
+}
+
+@layer components {
+    /* Layout */
+    .container-x { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+    .section { @apply relative py-20 sm:py-28; }
+    .section-alt { @apply border-y border-slate-100 bg-brand-light; }
+
+    /* Type */
+    /* Eyebrow echoes the logo's "——• SOLUTIONS •——" rule */
+    .eyebrow {
+        @apply inline-flex items-center gap-2.5 text-xs font-bold uppercase tracking-[0.22em] text-accent-700;
+    }
+    .eyebrow::before {
+        content: "";
+        width: 30px;
+        height: 7px;
+        background:
+            radial-gradient(circle at calc(100% - 3.5px) 50%, currentColor 3px, transparent 3.5px),
+            linear-gradient(currentColor, currentColor) left center / calc(100% - 9px) 1.5px no-repeat;
+    }
+    .h-display { @apply text-4xl font-extrabold leading-[1.05] sm:text-6xl lg:text-[4.25rem]; }
+    .h-section { @apply text-3xl font-extrabold leading-tight sm:text-[2.75rem]; }
+    .lead { @apply text-lg leading-relaxed text-slate-600; }
+    /* The signal-arc gradient from the logo */
+    .text-gradient {
+        @apply bg-gradient-to-r from-signal-violet via-signal-plum to-signal-red bg-clip-text text-transparent;
+    }
+    .bg-signal { @apply bg-gradient-to-r from-signal-violet via-signal-plum to-signal-red; }
+
+    /* Buttons */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
+    }
+    .btn-primary { @apply btn bg-brand-600 text-white shadow-lg shadow-brand-600/25 hover:bg-brand-700 hover:shadow-brand-700/30; }
+    .btn-secondary { @apply btn border border-slate-300 bg-white text-ink hover:border-brand-600 hover:text-brand-700; }
+    .btn-accent { @apply btn bg-accent-600 text-white shadow-lg shadow-accent-600/25 hover:bg-accent-700; }
+    /* Dark text: white on WhatsApp green is only ~2:1 contrast */
+    .btn-whatsapp { @apply btn bg-[#25D366] text-ink hover:bg-[#1EBE5A]; }
+    .link-arrow {
+        @apply inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-brand-600 transition hover:gap-2.5 hover:text-brand-700;
+    }
+
+    /* Surfaces */
+    .card { @apply relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 sm:p-8; }
+    .card-hover { @apply hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:shadow-brand-900/5; }
+    .glass { @apply rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10; }
+    .icon-tile { @apply inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-inset ring-brand-100; }
+    .chip { @apply inline-flex min-h-11 items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700; }
+    .chip-active { @apply border-brand-600 bg-brand-600 text-white hover:border-brand-600 hover:text-white; }
+    .gradient-border {
+        background: linear-gradient(white, white) padding-box,
+                    linear-gradient(135deg, theme('colors.signal.violet'), theme('colors.signal.plum'), theme('colors.signal.red')) border-box;
+        border: 2px solid transparent;
+    }
+
+    /* Forms */
+    .field-label { @apply mb-1.5 block text-sm font-medium text-slate-700; }
+    .field {
+        @apply block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-ink placeholder-slate-400 shadow-sm transition focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 disabled:bg-slate-50;
+    }
+    select.field { @apply pr-10; }
+    .field-file {
+        @apply block w-full text-sm text-slate-500 file:mr-4 file:min-h-11 file:rounded-full file:border-0 file:bg-brand-50 file:px-5 file:py-2.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100;
+    }
+    .field-error { @apply mt-1.5 text-xs text-accent-700; }
+
+    /* Decorative */
+    .bg-grid {
+        background-image:
+            linear-gradient(to right, rgba(15,17,21,0.045) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(15,17,21,0.045) 1px, transparent 1px);
+        background-size: 56px 56px;
+    }
+    /* Soft brand wash for light hero/banner backgrounds */
+    .bg-wash {
+        background:
+            radial-gradient(ellipse 60% 70% at 100% 0%, theme('colors.brand.100'), transparent 70%),
+            radial-gradient(ellipse 45% 55% at 0% 100%, theme('colors.accent.50'), transparent 70%);
+    }
+    .mask-fade-b { mask-image: linear-gradient(to bottom, black 30%, transparent); }
+    .mask-fade-x { mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); }
+
+    /* Long-form text */
+    .prose-dark { @apply space-y-5 leading-relaxed text-slate-700; }
+    .prose-dark h2 { @apply pt-4 text-2xl font-bold text-ink; }
+    .prose-dark a { @apply font-semibold text-brand-600 hover:text-brand-700; }
+    .prose-dark ul { @apply list-disc space-y-2 pl-5 marker:text-accent-600; }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion. Everything below is switched off for prefers-reduced-motion, and
+   nothing starts hidden unless JS is running (the `.js` class on <html>).
+   --------------------------------------------------------------------------- */
+:root { --ease-out: cubic-bezier(.2, .7, .2, 1); --ease-spring: cubic-bezier(.34, 1.56, .64, 1); }
+
+/* Signal arcs: draw in from the smallest (the source) outwards, then keep pulsing like a Wi-Fi signal */
+@keyframes arc-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes arc-pulse { 0%, 100% { opacity: .3; } 40% { opacity: 1; } }
+.js .arcs-draw .arc { stroke-dasharray: 1; stroke-dashoffset: 1; animation: arc-draw .8s var(--ease-out) forwards; }
+.js .arcs-draw .arc:nth-of-type(2) { animation-delay: .15s; }
+.js .arcs-draw .arc:nth-of-type(3) { animation-delay: .3s; }
+.js .arcs-draw .arc:nth-of-type(4) { animation-delay: .45s; }
+.js .signal-arcs.arcs-draw .arc { animation: arc-draw .8s var(--ease-out) forwards, arc-pulse 3.2s ease-in-out 1.4s infinite; }
+.js .signal-arcs.arcs-draw .arc:nth-of-type(2) { animation-delay: .15s, 1.65s; }
+.js .signal-arcs.arcs-draw .arc:nth-of-type(3) { animation-delay: .3s, 1.9s; }
+.js .signal-arcs.arcs-draw .arc:nth-of-type(4) { animation-delay: .45s, 2.15s; }
+/* Below the fold: wait until the surrounding .reveal block scrolls into view */
+.js .reveal:not(.is-visible) .arcs-draw .arc { animation-play-state: paused; }
+
+/* Hero entrance: children rise in sequence (set --i on each) */
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.js .intro { animation: rise .7s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 90ms + 80ms); }
+
+/* The logo's slash draws itself top to bottom */
+@keyframes slash-draw { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+.js .slash-draw { animation: slash-draw 1.4s var(--ease-out) .25s both; }
+
+/* Scroll reveal (grids get a stagger from [data-stagger] in app.js) */
+.js .reveal { opacity: 0; transform: translateY(20px); transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); }
+.js .reveal.is-visible { opacity: 1; transform: none; }
+.js .reveal-x { transform: scaleX(0); transform-origin: left; transition: transform 1.1s var(--ease-out) .2s; }
+.js .reveal-x.is-visible { transform: none; }
+/* Step markers pop in after their step appears */
+.js .reveal .pop { transform: scale(0); }
+.js .reveal.is-visible .pop { transform: scale(1); transition: transform .4s var(--ease-spring) .35s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .js .reveal, .js .reveal-x, .js .reveal .pop { opacity: 1; transform: none; transition: none; }
+    .js .intro, .js .slash-draw { animation: none; }
+    .js .arcs-draw .arc { animation: none !important; stroke-dasharray: none; stroke-dashoffset: 0; }
+    .animate-float, .animate-pulse-ring, .animate-ping { animation: none !important; }
+}

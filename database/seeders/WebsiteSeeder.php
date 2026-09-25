@@ -6,6 +6,7 @@ use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class WebsiteSeeder extends Seeder
 {
@@ -22,15 +23,23 @@ class WebsiteSeeder extends Seeder
 
     protected function seedAdmin(): void
     {
-        User::updateOrCreate(
+        // Never ship a known default password: take it from ADMIN_PASSWORD or generate one.
+        // firstOrCreate so re-seeding never resets a password the admin has since changed.
+        $password = env('ADMIN_PASSWORD') ?: Str::password(16);
+
+        $admin = User::firstOrCreate(
             ['email' => 'admin@inetsolutions.co.tz'],
             [
                 'name' => 'INET Administrator',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($password),
                 'role' => 'admin',
                 'email_verified_at' => now(),
             ]
         );
+
+        if ($admin->wasRecentlyCreated && ! env('ADMIN_PASSWORD')) {
+            $this->command?->warn("Admin account created: admin@inetsolutions.co.tz / {$password}  (change it after first login)");
+        }
     }
 
     protected function seedSettings(): void
@@ -61,18 +70,19 @@ class WebsiteSeeder extends Seeder
             ['support_email', 'support@inetsolutions.co.tz', 'contact', 'text', 'Support email'],
             ['sales_email', 'sales@inetsolutions.co.tz', 'contact', 'text', 'Sales email'],
             ['whatsapp', '255774111444', 'contact', 'text', 'WhatsApp number (no +)'],
-            ['address', 'Dar es Salaam, Tanzania', 'contact', 'text', 'Address'],
+            ['address', 'Zanzibar, Tanzania', 'contact', 'text', 'Address'],
 
             // app
-            ['app_play_url', 'https://play.google.com/store/apps/details?id=com.inetapp.cosfix', 'app', 'url', 'Google Play link'],
-            ['app_store_url', '', 'app', 'url', 'App Store link'],
+            ['app_play_url', 'https://play.google.com/store/apps/details?id=com.inetsolutions.inetapp', 'app', 'url', 'Google Play link'],
+            ['app_store_url', 'https://apps.apple.com/tz/app/inet-app/id6753070974', 'app', 'url', 'App Store link'],
 
             // hours
             ['working_hours', "Monday – Friday: 08:00 – 18:00\nSaturday: 09:00 – 14:00\nSunday: Emergency Support", 'hours', 'textarea', 'Working hours'],
         ];
 
+        // Values are only defaults: re-seeding must not overwrite what admins changed in Settings.
         foreach ($settings as [$key, $value, $group, $type, $label]) {
-            SiteSetting::updateOrCreate(['key' => $key], compact('value', 'group', 'type', 'label'));
+            SiteSetting::firstOrCreate(['key' => $key], compact('value'))->update(compact('group', 'type', 'label'));
         }
 
         // JSON/list settings
@@ -99,10 +109,8 @@ class WebsiteSeeder extends Seeder
         ];
 
         foreach ($json as [$key, $value, $group, $label]) {
-            SiteSetting::updateOrCreate(
-                ['key' => $key],
-                ['value' => json_encode($value), 'group' => $group, 'type' => 'json', 'label' => $label]
-            );
+            SiteSetting::firstOrCreate(['key' => $key], ['value' => json_encode($value)])
+                ->update(['group' => $group, 'type' => 'json', 'label' => $label]);
         }
 
         SiteSetting::flush();

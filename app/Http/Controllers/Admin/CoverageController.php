@@ -67,6 +67,7 @@ class CoverageController extends Controller
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $data['region'] = CoverageArea::canonicalRegion($data['region']);
         $data['installation_available'] = $request->boolean('installation_available');
 
         return $data;

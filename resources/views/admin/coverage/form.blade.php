@@ -14,7 +14,11 @@
     <div class="grid sm:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium">Region *</label>
-            <input name="region" value="{{ old('region', $area->region) }}" required class="mt-1 w-full rounded-lg border-slate-300 focus:border-brand-600 focus:ring-brand-600">
+            <input name="region" value="{{ old('region', $area->region) }}" required list="tz-regions" class="mt-1 w-full rounded-lg border-slate-300 focus:border-brand-600 focus:ring-brand-600">
+            <datalist id="tz-regions">
+                @foreach (\App\Models\CoverageArea::TANZANIA_REGIONS as $r)<option value="{{ $r }}">@endforeach
+            </datalist>
+            <p class="mt-1 text-xs text-slate-500">Pick from the list so the website's location dropdowns group areas correctly.</p>
         </div>
         <div>
             <label class="block text-sm font-medium">District</label>

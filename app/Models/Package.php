@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Package extends Model
 {
-    use SoftDeletes;
+    use Auditable, SoftDeletes;
 
     protected $fillable = [
         'name', 'category', 'speed', 'download_speed', 'upload_speed', 'price',

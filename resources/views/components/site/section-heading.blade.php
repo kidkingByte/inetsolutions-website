@@ -1,7 +1,10 @@
-@props(['title', 'subtitle' => null, 'center' => true])
-<div {{ $attributes->merge(['class' => ($center ? 'text-center mx-auto' : '') . ' max-w-2xl']) }}>
-    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-950">{{ $title }}</h2>
+@props(['title', 'subtitle' => null, 'eyebrow' => null, 'center' => true])
+<div {{ $attributes->merge(['class' => 'reveal max-w-3xl ' . ($center ? 'mx-auto text-center' : '')]) }}>
+    @if($eyebrow)
+        <p class="eyebrow {{ $center ? 'justify-center' : '' }}">{{ $eyebrow }}</p>
+    @endif
+    <h2 class="h-section mt-4">{{ $title }}</h2>
     @if($subtitle)
-        <p class="mt-3 text-slate-600">{{ $subtitle }}</p>
+        <p class="lead mt-5">{{ $subtitle }}</p>
     @endif
 </div>

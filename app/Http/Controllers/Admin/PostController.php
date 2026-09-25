@@ -58,7 +58,8 @@ class PostController extends Controller
             'cover_image' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $data['slug'] = Str::slug($request->input('title'));
+        // Keep the slug stable after creation so published URLs never break.
+        $data['slug'] = $post?->slug ?? $this->uniqueSlug($request->input('title'));
         $data['is_published'] = $request->boolean('is_published');
         $data['published_at'] = $data['is_published']
             ? ($post?->published_at ?? now())
@@ -71,5 +72,17 @@ class PostController extends Controller
         }
 
         return $data;
+    }
+
+    protected function uniqueSlug(string $title): string
+    {
+        $base = Str::slug($title) ?: 'post';
+        $slug = $base;
+
+        for ($i = 2; Post::withTrashed()->where('slug', $slug)->exists(); $i++) {
+            $slug = "{$base}-{$i}";
+        }
+
+        return $slug;
     }
 }

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class SiteSetting extends Model
 {
+    use Auditable;
+
     protected $fillable = ['key', 'value', 'group', 'type', 'label'];
 
     public const CACHE_KEY = 'site_settings';

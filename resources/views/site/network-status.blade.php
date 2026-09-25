@@ -1,30 +1,49 @@
 @php
     $allOk = $statuses->every(fn ($s) => $s->isOperational());
-    $badge = ['operational' => ['Operational', 'bg-green-100 text-green-700'], 'degraded' => ['Degraded', 'bg-amber-100 text-amber-700'], 'outage' => ['Outage', 'bg-red-100 text-red-700'], 'maintenance' => ['Maintenance', 'bg-blue-100 text-blue-700']];
+    $badge = [
+        'operational' => ['Operational', 'bg-emerald-100 text-emerald-700 border-emerald-200', 'bg-emerald-400'],
+        'degraded' => ['Degraded', 'bg-amber-100 text-amber-700 border-amber-200', 'bg-amber-400'],
+        'outage' => ['Outage', 'bg-red-100 text-red-700 border-red-200', 'bg-red-400'],
+        'maintenance' => ['Maintenance', 'bg-sky-100 text-sky-700 border-sky-200', 'bg-sky-400'],
+    ];
 @endphp
 <x-site-layout>
     <x-slot name="title">Network Status — {{ site('company_name') }}</x-slot>
-    <x-site.page-banner title="Network Status" subtitle="Real-time status of INET services." />
 
-    <section class="py-20 bg-white">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="rounded-2xl px-6 py-5 text-center font-semibold {{ $allOk ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-800' }}">
-                {{ $allOk ? 'All Systems Operational' : 'Some services are experiencing issues' }}
+    <x-site.page-banner eyebrow="Status" title="Network Status" subtitle="Current status of INET services, updated by our network operations team." />
+
+    <section class="section">
+        <div class="container-x max-w-4xl">
+            <div class="reveal flex items-center gap-4 rounded-3xl border p-6 sm:p-8 {{ $allOk ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50' }}">
+                <span class="relative flex h-4 w-4">
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full {{ $allOk ? 'bg-emerald-400' : 'bg-amber-400' }} opacity-60"></span>
+                    <span class="relative inline-flex h-4 w-4 rounded-full {{ $allOk ? 'bg-emerald-400' : 'bg-amber-400' }}"></span>
+                </span>
+                <div>
+                    <p class="text-xl font-bold text-ink">{{ $allOk ? 'All Systems Operational' : 'Some services are experiencing issues' }}</p>
+                    <p class="text-sm text-slate-500">Last updated {{ optional($statuses->max('updated_at'))->diffForHumans() ?? '—' }}</p>
+                </div>
             </div>
-            <ul class="mt-6 divide-y divide-slate-200 rounded-2xl border border-slate-200">
+
+            <ul class="reveal mt-6 divide-y divide-slate-200 overflow-hidden rounded-3xl border border-slate-200 bg-white">
                 @forelse($statuses as $s)
-                    <li class="flex items-center justify-between p-5">
-                        <div>
-                            <p class="font-semibold text-brand-950">{{ $s->service }}</p>
-                            @if($s->message)<p class="text-sm text-slate-500">{{ $s->message }}</p>@endif
+                    @php [$label, $classes, $dot] = $badge[$s->status] ?? [ucfirst($s->status), 'bg-slate-100 text-slate-600 border-slate-200', 'bg-slate-400']; @endphp
+                    <li class="flex items-center justify-between gap-4 px-6 py-5">
+                        <div class="flex items-center gap-4">
+                            <span class="h-2.5 w-2.5 rounded-full {{ $dot }}"></span>
+                            <div>
+                                <p class="font-semibold text-ink">{{ $s->service }}</p>
+                                @if($s->message)<p class="text-sm text-slate-500">{{ $s->message }}</p>@endif
+                            </div>
                         </div>
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $badge[$s->status][1] ?? 'bg-slate-100 text-slate-700' }}">{{ $badge[$s->status][0] ?? ucfirst($s->status) }}</span>
+                        <span class="shrink-0 rounded-full border px-3 py-1 text-xs font-semibold {{ $classes }}">{{ $label }}</span>
                     </li>
                 @empty
-                    <li class="p-5 text-slate-500">No status information available.</li>
+                    <li class="px-6 py-5 text-slate-500">No status information available.</li>
                 @endforelse
             </ul>
-            <p class="mt-6 text-center text-sm text-slate-500">Experiencing a problem? <a href="{{ route('support.report') }}" class="text-brand-700 font-semibold">Report it here</a>.</p>
+
+            <p class="mt-8 text-center text-sm text-slate-500">Experiencing a problem? <a href="{{ route('support.report') }}" class="font-semibold text-brand-600 hover:text-brand-700">Report it here</a>.</p>
         </div>
     </section>
 </x-site-layout>

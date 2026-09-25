@@ -1,41 +1,60 @@
-@php $values = site_json('core_values', []); @endphp
+@php
+    $values = site_json('core_values', []);
+    $valueIcons = ['signal', 'users', 'sparkles', 'search', 'shield', 'bolt'];
+    $serve = ['Home internet users', 'Students & families', 'Small & medium businesses', 'Corporate organizations', 'Schools & institutions', 'Hotels', 'NGOs', 'Government & private organizations'];
+@endphp
 <x-site-layout>
-    <x-slot name="title">{{ site('about_heading') }} — {{ site('company_name') }}</x-slot>
+    <x-slot name="title">About Us — {{ site('company_name') }}</x-slot>
 
-    <x-site.page-banner :title="site('about_heading')" :subtitle="site('tagline')" />
+    <x-site.page-banner eyebrow="About INET" :title="site('about_heading')" :subtitle="site('positioning')" />
 
-    <section class="py-20 bg-white">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="prose prose-slate max-w-none text-slate-700 space-y-4">
-                @foreach(preg_split('/\n\s*\n/', site('about_body')) as $para)
-                    <p>{{ $para }}</p>
-                @endforeach
+    <section class="section">
+        <div class="container-x grid gap-14 lg:grid-cols-12">
+            <div class="lg:col-span-7">
+                <div class="prose-dark reveal text-lg">
+                    @foreach(preg_split('/\n\s*\n/', site('about_body')) as $para)
+                        <p>{{ $para }}</p>
+                    @endforeach
+                </div>
+            </div>
+            <div class="lg:col-span-5">
+                <div class="card reveal">
+                    <p class="eyebrow">Who we serve</p>
+                    <ul class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                        @foreach($serve as $item)
+                            <li class="flex items-center gap-3 text-sm text-slate-700"><x-site.icon name="check" class="h-4 w-4 shrink-0 text-brand-600" /> {{ $item }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="py-16 bg-brand-light">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-6">
-            <div class="rounded-2xl bg-white p-8 shadow-sm">
-                <h3 class="text-sm font-bold uppercase tracking-widest text-accent">Our Mission</h3>
-                <p class="mt-3 text-slate-700">{{ site('mission') }}</p>
-            </div>
-            <div class="rounded-2xl bg-white p-8 shadow-sm">
-                <h3 class="text-sm font-bold uppercase tracking-widest text-accent">Our Vision</h3>
-                <p class="mt-3 text-slate-700">{{ site('vision') }}</p>
-            </div>
+    <section class="section section-alt">
+        <div class="container-x grid gap-6 md:grid-cols-2">
+            @foreach([['Our Mission', site('mission'), 'bolt'], ['Our Vision', site('vision'), 'globe']] as [$heading, $text, $icon])
+                <div class="card reveal overflow-hidden">
+                    <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-50 blur-2xl"></div>
+                    <span class="icon-tile"><x-site.icon :name="$icon" class="h-6 w-6" /></span>
+                    <h2 class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-brand-600">{{ $heading }}</h2>
+                    <p class="mt-4 text-2xl font-semibold leading-snug text-ink">{{ $text }}</p>
+                </div>
+            @endforeach
         </div>
     </section>
 
     @if($values)
-    <section class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <x-site.section-heading title="Our Core Values" />
-            <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($values as $v)
-                    <div class="rounded-2xl border border-slate-200 p-6">
-                        <h3 class="font-bold text-brand-950">{{ $v['title'] }}</h3>
-                        <p class="mt-2 text-sm text-slate-600">{{ $v['text'] }}</p>
+    <section class="section">
+        <div class="container-x">
+            <x-site.section-heading eyebrow="What drives us" title="Our Core Values" />
+            <div class="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach($values as $i => $v)
+                    <div class="card card-hover reveal">
+                        <div class="flex items-center justify-between">
+                            <span class="icon-tile"><x-site.icon :name="$valueIcons[$i] ?? 'sparkles'" class="h-6 w-6" /></span>
+                        </div>
+                        <h3 class="mt-6 text-xl font-bold">{{ $v['title'] }}</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-500">{{ $v['text'] }}</p>
                     </div>
                 @endforeach
             </div>

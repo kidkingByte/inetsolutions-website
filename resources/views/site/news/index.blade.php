@@ -1,35 +1,34 @@
 <x-site-layout>
     <x-slot name="title">News & Insights — {{ site('company_name') }}</x-slot>
-    <x-site.page-banner title="Latest News & Insights" subtitle="Tips, technology and updates from INET SOLUTIONS LTD." />
 
-    <section class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('news') }}" class="rounded-full px-4 py-1.5 text-sm font-semibold {{ !$category ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-700' }}">All</a>
+    <x-site.page-banner eyebrow="Insights" title="Latest News & Insights" subtitle="Tips, technology and updates from INET SOLUTIONS LTD.">
+        <div class="mt-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <nav class="flex flex-wrap gap-2" aria-label="Categories">
+                <a href="{{ route('news') }}" class="chip {{ ! $category ? 'chip-active' : '' }}">All</a>
                 @foreach($categories as $c)
-                    <a href="{{ route('news', ['category' => $c]) }}" class="rounded-full px-4 py-1.5 text-sm font-semibold {{ $category === $c ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-700' }}">{{ $c }}</a>
+                    <a href="{{ route('news', ['category' => $c]) }}" class="chip {{ $category === $c ? 'chip-active' : '' }}">{{ $c }}</a>
                 @endforeach
-            </div>
+            </nav>
+            <form method="GET" action="{{ route('news') }}" class="relative w-full lg:w-72" role="search">
+                @if($category)<input type="hidden" name="category" value="{{ $category }}">@endif
+                <label for="news-q" class="sr-only">Search articles</label>
+                <x-site.icon name="search" class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input id="news-q" name="q" value="{{ request('q') }}" placeholder="Search articles…" class="field rounded-full pl-11">
+            </form>
+        </div>
+    </x-site.page-banner>
 
-            <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section class="section">
+        <div class="container-x">
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-stagger>
                 @forelse($posts as $post)
-                    <a href="{{ route('news.show', $post) }}" class="group flex flex-col rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition">
-                        @if($post->cover_image)
-                            <img src="{{ asset('storage/'.$post->cover_image) }}" alt="" class="h-40 w-full object-cover" loading="lazy">
-                        @endif
-                        <div class="p-6 flex flex-col flex-1">
-                            <span class="text-xs font-semibold uppercase text-accent">{{ $post->category }}</span>
-                            <h3 class="mt-2 text-lg font-bold text-brand-950 group-hover:text-brand-700">{{ $post->title }}</h3>
-                            <p class="mt-2 text-sm text-slate-600 flex-1">{{ $post->excerpt }}</p>
-                            <span class="mt-4 text-xs text-slate-400">{{ optional($post->published_at)->format('M j, Y') }}</span>
-                        </div>
-                    </a>
+                    @include('site.news._card', ['post' => $post])
                 @empty
-                    <p class="col-span-full text-center text-slate-500">No articles yet.</p>
+                    <p class="col-span-full text-center text-slate-500">No articles found.</p>
                 @endforelse
             </div>
 
-            <div class="mt-12">{{ $posts->links() }}</div>
+            <div class="mt-14">{{ $posts->links('site.partials.pagination') }}</div>
         </div>
     </section>
 </x-site-layout>

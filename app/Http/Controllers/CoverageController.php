@@ -15,6 +15,8 @@ class CoverageController extends Controller
 
     public function check(Request $request)
     {
+        $request->merge(['region' => CoverageArea::canonicalRegion((string) $request->input('region'))]);
+
         $data = $request->validate([
             'full_name' => ['nullable', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
@@ -43,19 +45,22 @@ class CoverageController extends Controller
         ]);
 
         $result = [
-            'status' => $match['status'],           // available | coming_soon | not_available
+            'status' => $match['status'],           // available | partial | coming_soon | not_available
             'message' => $match['message'],
             'area' => $match['area'],
             'installation_available' => $match['area']?->installation_available ?? false,
         ];
 
         if ($request->expectsJson()) {
-            return response()->json($result);
+            // `html` lets the coverage page show the result in place without a reload.
+            return response()->json($result + [
+                'html' => view('site.partials.coverage-result', ['result' => $result, 'input' => $data])->render(),
+            ]);
         }
 
         $request->session()->flashInput($request->all());
 
-        return view('site.coverage')->with('result', $result);
+        return view('site.coverage', ['result' => $result, 'input' => $data]);
     }
 
     public function notify(Request $request)
@@ -80,27 +85,35 @@ class CoverageController extends Controller
 
     protected function matchCoverage(array $data): array
     {
-        $query = CoverageArea::query()->whereRaw('LOWER(region) = ?', [mb_strtolower($data['region'])]);
+        $inRegion = fn () => CoverageArea::query()->whereRaw('LOWER(region) = ?', [mb_strtolower($data['region'])]);
+        $district = mb_strtolower($data['district'] ?? '');
+        $ward = mb_strtolower($data['ward'] ?? '');
 
-        if (! empty($data['district'])) {
-            $query->whereRaw('LOWER(district) = ?', [mb_strtolower($data['district'])]);
-        }
-        if (! empty($data['ward'])) {
-            $query->whereRaw('LOWER(ward) = ?', [mb_strtolower($data['ward'])]);
-        }
+        // Most specific first. A broader lookup only answers when every area it covers
+        // agrees; otherwise one covered ward would wrongly report a whole region as available.
+        $candidates = array_filter([
+            $district && $ward ? fn () => $inRegion()->whereRaw('LOWER(district) = ?', [$district])->whereRaw('LOWER(ward) = ?', [$ward])->get() : null,
+            $district ? fn () => $inRegion()->whereRaw('LOWER(district) = ?', [$district])->whereNull('ward')->get() : null,
+            $district ? fn () => $inRegion()->whereRaw('LOWER(district) = ?', [$district])->get() : null,
+            fn () => $inRegion()->whereNull('district')->get(),
+            fn () => $inRegion()->get(),
+        ]);
 
-        // Prefer the most specific match.
-        $area = (clone $query)->latest()->first();
-
-        if (! $area) {
-            // Fall back to a region-only match.
-            $area = CoverageArea::whereRaw('LOWER(region) = ?', [mb_strtolower($data['region'])])
-                ->where(function ($q) use ($data) {
-                    if (! empty($data['district'])) {
-                        $q->orWhereNull('district');
-                    }
-                })
-                ->latest()->first();
+        $area = null;
+        foreach ($candidates as $lookup) {
+            $areas = $lookup();
+            if ($areas->isEmpty()) {
+                continue;
+            }
+            if ($areas->pluck('status')->unique()->count() > 1) {
+                return [
+                    'status' => 'partial',
+                    'message' => 'INET is available in parts of this area. Add your district and ward for an exact answer, or request a connection and our team will confirm.',
+                    'area' => null,
+                ];
+            }
+            $area = $areas->sortByDesc('created_at')->first();
+            break;
         }
 
         if (! $area) {

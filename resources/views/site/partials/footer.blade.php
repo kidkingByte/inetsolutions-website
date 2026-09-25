@@ -1,74 +1,70 @@
 @php
-    $social = site_json('social_links', []);
-    $quickLinks = [
-        ['Home', 'home'], ['About Us', 'about'], ['Internet', 'internet'], ['Packages', 'packages'],
-        ['Solutions', 'solutions'], ['Coverage', 'coverage'], ['Support', 'support'], ['Contact', 'contact'],
-    ];
-    $customerLinks = [
-        ['Customer Login', site('customer_portal_url') ?: route('login')],
-        ['Pay Your Bill', site('customer_portal_url') ?: route('login')],
-        ['Check Usage', site('customer_portal_url') ?: route('login')],
-        ['Support Ticket', route('support.report')],
-        ['Download App', route('app')],
-    ];
-    $companyLinks = [
-        ['About Us', route('about')], ['News', route('news')], ['Contact', route('contact')],
-        ['Privacy Policy', route('legal', 'privacy-policy')],
-        ['Terms & Conditions', route('legal', 'terms-and-conditions')],
-        ['Acceptable Use Policy', route('legal', 'acceptable-use-policy')],
+    $social = array_filter(site_json('social_links', []));
+    $columns = [
+        'Quick Links' => [
+            ['Home', route('home')], ['About Us', route('about')], ['Internet', route('internet')],
+            ['Packages', route('packages')], ['Solutions', route('solutions')], ['Coverage', route('coverage')],
+            ['Support', route('support')], ['Contact', route('contact')],
+        ],
+        'Customer' => [
+            // Account self-service (bills, usage) lives in the iNet app
+            ['Download iNet App', route('app')], ['Pay Your Bill', route('app')], ['Check Usage', route('app')],
+            ['Support Ticket', route('support.report')], ['Network Status', route('network-status')],
+            ['Speed Test', route('speed-test')],
+        ],
+        'Company' => [
+            ['About Us', route('about')], ['News', route('news')], ['FAQs', route('faq')], ['Contact', route('contact')],
+            ['Privacy Policy', route('legal', 'privacy-policy')],
+            ['Terms & Conditions', route('legal', 'terms-and-conditions')],
+            ['Acceptable Use Policy', route('legal', 'acceptable-use-policy')],
+        ],
     ];
 @endphp
-<footer class="bg-brand-950 text-slate-300">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
-            <div class="lg:col-span-2">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white font-extrabold">iN</span>
-                    <span class="font-extrabold text-lg tracking-tight text-white">INET<span class="text-accent">SOLUTIONS</span></span>
-                </div>
-                <p class="mt-4 text-sm max-w-sm">{{ site('positioning') }}</p>
-                <p class="mt-4 text-sm italic text-accent">{{ site('tagline') }}</p>
-            </div>
+<footer class="relative overflow-hidden bg-night-950">
+    <div class="bg-signal h-1"></div>
+    <div class="pointer-events-none absolute -top-40 left-1/2 h-80 w-[48rem] -translate-x-1/2 rounded-full bg-brand-600/20 blur-3xl"></div>
 
-            <div>
-                <h4 class="text-white font-semibold mb-4 text-sm">Quick Links</h4>
-                <ul class="space-y-2 text-sm">
-                    @foreach($quickLinks as [$label, $route])
-                        <li><a href="{{ route($route) }}" class="hover:text-white">{{ $label }}</a></li>
-                    @endforeach
+    <div class="container-x relative py-16 sm:py-20">
+        <div class="grid gap-12 lg:grid-cols-12">
+            <div class="lg:col-span-4">
+                <img src="{{ asset('images/logo-mark-white.png') }}" alt="{{ site('company_name') }}" class="h-16 w-auto" loading="lazy" width="311" height="280">
+                <p class="mt-6 max-w-sm text-sm leading-relaxed text-slate-400">{{ site('positioning') }}</p>
+                <p class="mt-4 text-sm font-semibold text-accent-400">{{ site('tagline') }} · {{ site('tagline_sw') }}</p>
+
+                <ul class="mt-8 space-y-3 text-sm">
+                    <li class="flex items-center gap-3 text-slate-300"><x-site.icon name="map-pin" class="h-5 w-5 text-accent-400" /> {{ site('address') }}</li>
+                    <li><a href="tel:{{ preg_replace('/\s+/', '', site('phone')) }}" class="flex items-center gap-3 text-slate-300 hover:text-white"><x-site.icon name="phone" class="h-5 w-5 text-accent-400" /> {{ site('phone') }}</a></li>
+                    <li><a href="mailto:{{ site('email') }}" class="flex items-center gap-3 text-slate-300 hover:text-white"><x-site.icon name="mail" class="h-5 w-5 text-accent-400" /> {{ site('email') }}</a></li>
                 </ul>
             </div>
 
-            <div>
-                <h4 class="text-white font-semibold mb-4 text-sm">Customer</h4>
-                <ul class="space-y-2 text-sm">
-                    @foreach($customerLinks as [$label, $href])
-                        <li><a href="{{ $href }}" class="hover:text-white">{{ $label }}</a></li>
-                    @endforeach
-                </ul>
-            </div>
-
-            <div>
-                <h4 class="text-white font-semibold mb-4 text-sm">Company</h4>
-                <ul class="space-y-2 text-sm">
-                    @foreach($companyLinks as [$label, $href])
-                        <li><a href="{{ $href }}" class="hover:text-white">{{ $label }}</a></li>
-                    @endforeach
-                </ul>
-                <h4 class="text-white font-semibold mt-6 mb-3 text-sm">Follow Us</h4>
-                <div class="flex gap-3">
-                    @foreach($social as $network => $url)
-                        @if($url)
-                            <a href="{{ $url }}" target="_blank" rel="noopener" class="h-8 w-8 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center text-xs capitalize" title="{{ ucfirst($network) }}">{{ strtoupper(substr($network,0,1)) }}</a>
-                        @endif
-                    @endforeach
-                </div>
+            <div class="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-8">
+                @foreach($columns as $heading => $links)
+                    <div>
+                        <h4 class="text-sm font-semibold text-white">{{ $heading }}</h4>
+                        <ul class="mt-5 space-y-3 text-sm">
+                            @foreach($links as [$label, $href])
+                                <li><a href="{{ $href }}" class="text-slate-400 transition hover:text-white">{{ $label }}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endforeach
             </div>
         </div>
 
-        <div class="mt-12 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-            <p>&copy; {{ date('Y') }} {{ site('company_name') }}. All Rights Reserved.</p>
-            <p class="text-slate-400">{{ site('address') }} &middot; <a href="tel:{{ preg_replace('/\s+/','', site('phone')) }}" class="hover:text-white">{{ site('phone') }}</a></p>
+        <div class="mt-16 flex flex-col-reverse items-start justify-between gap-6 border-t border-white/10 pt-8 sm:flex-row sm:items-center">
+            <p class="text-sm text-slate-500">&copy; {{ date('Y') }} {{ site('company_name') }}. All Rights Reserved.</p>
+            @if($social)
+                <div class="flex items-center gap-2">
+                    <span class="mr-2 text-sm text-slate-500">Follow us</span>
+                    @foreach($social as $network => $url)
+                        <a href="{{ $url }}" target="_blank" rel="noopener" aria-label="{{ ucfirst($network) }}"
+                           class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-slate-300 transition hover:border-accent-400/50 hover:text-white">
+                            <x-site.icon :name="$network" class="h-4 w-4" />
+                        </a>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 </footer>

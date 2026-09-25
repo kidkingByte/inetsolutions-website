@@ -1,43 +1,55 @@
 @php
-    $segment = $segment ?: 'home';
-    $tabs = ['home' => 'Home Internet', 'business' => 'Business Internet', 'enterprise' => 'Enterprise Internet'];
+    $segment = in_array($segment, ['home', 'business', 'enterprise'], true) ? $segment : 'home';
+    $tabs = ['home' => ['Home Internet', 'home'], 'business' => ['Business Internet', 'building'], 'enterprise' => ['Enterprise Internet', 'server']];
     $copy = [
-        'home' => ['title' => 'Internet for Your Home', 'desc' => 'Enjoy reliable internet connectivity for streaming, studying, working, video calls, social media and everyday browsing.', 'features' => ['Reliable connectivity','Flexible packages','Fast installation','Customer support','Convenient payment options','Usage monitoring']],
-        'business' => ['title' => 'Business Internet That Keeps You Moving', 'desc' => 'Our business internet solutions provide reliable connectivity for teams, customers, cloud applications, communication and daily operations.', 'features' => ['Business-grade connectivity','Flexible bandwidth','Scalable packages','Network monitoring','Customer support','Installation support']],
-        'enterprise' => ['title' => 'Connectivity for Growing Organizations', 'desc' => 'Customized connectivity for organizations with more demanding networking requirements.', 'features' => ['Dedicated Internet Access','Point-to-Point & Site-to-Site','Network design & installation','VPN solutions','Managed connectivity','Network monitoring']],
+        'home' => ['title' => 'Internet for Your Home', 'desc' => 'Enjoy reliable internet connectivity for streaming, studying, working, video calls, social media and everyday browsing.', 'features' => ['Reliable connectivity', 'Flexible packages', 'Fast installation', 'Customer support', 'Convenient payment options', 'Usage monitoring'], 'suitable' => ['Families', 'Students', 'Remote workers', 'Streaming & video calls'], 'cta' => 'Get Connected'],
+        'business' => ['title' => 'Business Internet That Keeps You Moving', 'desc' => 'Your business depends on connectivity. Our business internet solutions provide reliable connectivity for teams, customers, cloud applications, communication and daily operations.', 'features' => ['Business-grade connectivity', 'Flexible bandwidth', 'Scalable packages', 'Network monitoring', 'Customer support', 'Installation support'], 'suitable' => ['Small businesses', 'Shops', 'Offices', 'Hotels', 'Schools', 'SMEs', 'Institutions', 'Organizations'], 'cta' => 'Talk to Our Business Team'],
+        'enterprise' => ['title' => 'Connectivity for Growing Organizations', 'desc' => 'INET SOLUTIONS LTD provides customized connectivity solutions for organizations with more demanding networking requirements.', 'features' => ['Enterprise Internet', 'Dedicated Internet Access', 'Point-to-Point Connectivity', 'Site-to-Site Connectivity', 'Network Design & Installation', 'Network Monitoring', 'Managed Connectivity', 'VPN Solutions'], 'suitable' => ['Corporate organizations', 'Institutions', 'NGOs', 'Government & private organizations'], 'cta' => 'Request Enterprise Solution'],
     ][$segment];
 @endphp
 <x-site-layout>
-    <x-slot name="title">{{ $copy['title'] }} — {{ site('company_name') }}</x-slot>
-    <x-site.page-banner :title="$copy['title']" :subtitle="$copy['desc']" />
+    <x-slot name="title">{{ $tabs[$segment][0] }} — {{ site('company_name') }}</x-slot>
 
-    <section class="py-14 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-wrap gap-2">
-                @foreach($tabs as $key => $label)
-                    <a href="{{ route('internet', ['type' => $key]) }}" class="rounded-full px-4 py-2 text-sm font-semibold {{ $key === $segment ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">{{ $label }}</a>
-                @endforeach
-            </div>
+    <x-site.page-banner :eyebrow="$tabs[$segment][0]" :title="$copy['title']" :subtitle="$copy['desc']">
+        <nav class="mt-10 flex flex-wrap gap-2" aria-label="Internet segments">
+            @foreach($tabs as $key => [$label, $icon])
+                <a href="{{ route('internet', ['type' => $key]) }}" @if($key === $segment) aria-current="page" @endif class="chip gap-2 {{ $key === $segment ? 'chip-active' : '' }}">
+                    <x-site.icon :name="$icon" class="h-4 w-4" /> {{ $label }}
+                </a>
+            @endforeach
+        </nav>
+    </x-site.page-banner>
 
-            <div class="mt-10 grid lg:grid-cols-3 gap-10">
-                <div class="lg:col-span-1">
-                    <h3 class="text-lg font-bold text-brand-950">What's included</h3>
-                    <ul class="mt-4 space-y-3 text-sm text-slate-700">
+    <section class="section">
+        <div class="container-x grid gap-12 lg:grid-cols-12">
+            <aside class="lg:col-span-4">
+                <div class="card reveal lg:sticky lg:top-28">
+                    <h2 class="text-lg font-bold">What's included</h2>
+                    <ul class="mt-5 space-y-3 text-sm">
                         @foreach($copy['features'] as $f)
-                            <li class="flex items-start gap-2"><span class="text-green-500">✔</span>{{ $f }}</li>
+                            <li class="flex items-start gap-3 text-slate-700"><x-site.icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />{{ $f }}</li>
                         @endforeach
                     </ul>
-                    <a href="{{ route('get-connected', ['service' => $segment]) }}" class="mt-6 inline-flex rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">Get Connected</a>
+                    <h3 class="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Suitable for</h3>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @foreach($copy['suitable'] as $s)
+                            <span class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">{{ $s }}</span>
+                        @endforeach
+                    </div>
+                    <a href="{{ route('get-connected', ['service' => $segment]) }}" class="btn-primary mt-8 w-full">{{ $copy['cta'] }}</a>
+                    <a href="{{ route('coverage') }}" class="btn-secondary mt-3 w-full">Check Coverage</a>
                 </div>
-                <div class="lg:col-span-2 grid sm:grid-cols-2 gap-6">
-                    @forelse($packages as $package)
-                        <x-site.package-card :package="$package" />
-                    @empty
-                        <div class="sm:col-span-2 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
-                            Packages are being updated. <a href="{{ route('contact') }}" class="text-brand-700 font-semibold">Contact our team</a> for current offers.
-                        </div>
-                    @endforelse
-                </div>
+            </aside>
+
+            <div class="grid gap-6 sm:grid-cols-2 lg:col-span-8">
+                @forelse($packages as $package)
+                    <x-site.package-card :package="$package" />
+                @empty
+                    <div class="card sm:col-span-2 text-center">
+                        <p class="text-slate-600">Packages are being updated.</p>
+                        <a href="{{ route('contact') }}" class="link-arrow mt-3">Contact our team for current offers <x-site.icon name="arrow-right" class="h-4 w-4" /></a>
+                    </div>
+                @endforelse
             </div>
         </div>
     </section>

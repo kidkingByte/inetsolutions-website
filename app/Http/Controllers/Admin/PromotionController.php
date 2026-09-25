@@ -49,7 +49,7 @@ class PromotionController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:160'],
             'description' => ['nullable', 'string', 'max:500'],
-            'link' => ['nullable', 'string', 'max:255'],
+            'link' => ['nullable', 'string', 'max:255', 'regex:#^(https?://|/)#i'],
             'placement' => ['required', 'in:homepage,packages,popup'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date'],
