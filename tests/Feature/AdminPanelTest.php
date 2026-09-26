@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AuditLog;
+use App\Models\CoverageArea;
 use App\Models\Enquiry;
 use App\Models\Package;
 use App\Models\User;
@@ -210,6 +211,23 @@ class AdminPanelTest extends TestCase
 
         $this->actingAs($this->staff('content'))->get(route('admin.dashboard'))
             ->assertDontSee('Needs attention')->assertSee('Published posts');
+    }
+
+    public function test_coverage_areas_can_have_an_exact_map_position(): void
+    {
+        $manager = $this->staff('manager');
+
+        $this->actingAs($manager)->post(route('admin.coverage.store'), ['region' => 'kusini pemba', 'district' => 'Chake Chake', 'status' => 'available', 'latitude' => '-5.2459', 'longitude' => '39.7666'])
+            ->assertSessionHasNoErrors();
+        $area = CoverageArea::firstOrFail();
+        $this->assertSame('Kusini Pemba', $area->region);
+        $this->assertSame([-5.2459, 39.7666], [$area->latitude, $area->longitude]);
+
+        // Both or neither, and within range
+        $this->actingAs($manager)->post(route('admin.coverage.store'), ['region' => 'Kusini Pemba', 'status' => 'available', 'latitude' => '-5.2'])
+            ->assertSessionHasErrors('longitude');
+        $this->actingAs($manager)->post(route('admin.coverage.store'), ['region' => 'Kusini Pemba', 'status' => 'available', 'latitude' => '-95', 'longitude' => '39'])
+            ->assertSessionHasErrors('latitude');
     }
 
     public function test_sidebar_only_lists_permitted_sections(): void

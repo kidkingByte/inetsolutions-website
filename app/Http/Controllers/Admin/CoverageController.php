@@ -61,6 +61,8 @@ class CoverageController extends Controller
             'district' => ['nullable', 'string', 'max:120'],
             'ward' => ['nullable', 'string', 'max:120'],
             'street' => ['nullable', 'string', 'max:120'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             'service_type' => ['nullable', 'string', 'max:60'],
             'technology' => ['nullable', 'string', 'max:60'],
             'status' => ['required', 'in:available,coming_soon,under_expansion,not_available'],

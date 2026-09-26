@@ -53,7 +53,7 @@
                 </div>
 
                 <p class="intro mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-slate-600" style="--i:4">
-                    <span class="flex items-center gap-2"><x-site.icon name="map-pin" class="h-4 w-4 text-accent-600" /> Based in {{ site('address') }}</span>
+                    <a href="{{ route('coverage') }}" class="flex items-center gap-2 hover:text-brand-700"><x-site.icon name="map-pin" class="h-4 w-4 text-accent-600" /> Serving all of Unguja &amp; Pemba</a>
                     @if($statuses->isNotEmpty())
                         <a href="{{ route('network-status') }}" class="flex items-center gap-2 hover:text-brand-700">
                             <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full {{ $allOk ? 'bg-emerald-400' : 'bg-amber-400' }} opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full {{ $allOk ? 'bg-emerald-500' : 'bg-amber-500' }}"></span></span>

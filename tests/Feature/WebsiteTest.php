@@ -171,16 +171,68 @@ class WebsiteTest extends TestCase
         $this->get('/get-connected?region=Dar+es+Salaam&ward=Mikocheni')->assertSee('value="Mikocheni"', false);
     }
 
-    public function test_seeded_site_is_based_in_zanzibar_and_serves_unguja(): void
+    public function test_seeded_site_is_based_in_zanzibar_and_serves_unguja_and_pemba(): void
     {
         $this->seed(WebsiteSeeder::class);
 
-        $this->assertSame(['Kaskazini Unguja', 'Kusini Unguja', 'Mjini Magharibi'], array_keys(CoverageArea::locationTree()));
+        $this->assertSame(['Kaskazini Pemba', 'Kaskazini Unguja', 'Kusini Pemba', 'Kusini Unguja', 'Mjini Magharibi'], array_keys(CoverageArea::locationTree()));
         $this->postJson('/coverage/check', ['region' => 'Mjini Magharibi', 'district' => 'Mjini', 'ward' => 'Shangani'])
+            ->assertJson(['status' => 'available']);
+        $this->postJson('/coverage/check', ['region' => 'Kusini Pemba', 'district' => 'Chake Chake'])
             ->assertJson(['status' => 'available']);
         $this->postJson('/coverage/check', ['region' => 'Dar es Salaam'])->assertJson(['status' => 'not_available']);
 
         $this->get('/contact')->assertSee('Zanzibar, Tanzania')->assertDontSee('Dar es Salaam, Tanzania');
+    }
+
+    public function test_coverage_map_shows_one_marker_per_served_region(): void
+    {
+        $this->seed(WebsiteSeeder::class);
+
+        $points = collect(CoverageArea::mapPoints());
+
+        $this->assertCount(5, $points);
+        $this->assertSame(['available'], $points->pluck('status')->unique()->values()->all());
+        $pemba = $points->firstWhere('region', 'Kaskazini Pemba');
+        $this->assertEqualsWithDelta(-5.03, $pemba['lat'], 0.01);
+
+        $this->get('/coverage')->assertOk()
+            ->assertSee('data-coverage-map', false)
+            ->assertSee('Kusini Pemba')
+            ->assertSee('Unguja and Pemba');
+    }
+
+    public function test_areas_with_exact_coordinates_get_their_own_pin_and_others_group_by_region(): void
+    {
+        CoverageArea::create(['region' => 'Kusini Pemba', 'district' => 'Chake Chake', 'ward' => 'Madungu', 'status' => 'available', 'latitude' => -5.2459, 'longitude' => 39.7666]);
+        CoverageArea::create(['region' => 'Kusini Pemba', 'district' => 'Mkoani', 'status' => 'coming_soon']);
+        CoverageArea::create(['region' => 'Mjini Magharibi', 'district' => 'Mjini', 'status' => 'not_available']);
+
+        $points = collect(CoverageArea::mapPoints());
+
+        $this->assertCount(2, $points, 'not_available areas are not mapped');
+        $pin = $points->firstWhere('title', 'Madungu');
+        $this->assertSame([-5.2459, 39.7666], [$pin['lat'], $pin['lng']]);
+        $region = $points->firstWhere('title', 'Kusini Pemba');
+        $this->assertSame('coming_soon', $region['status']);
+        $this->assertSame(['Mkoani'], $region['places']);
+    }
+
+    public function test_regions_marked_not_available_are_not_listed_as_served(): void
+    {
+        CoverageArea::create(['region' => 'Kusini Unguja', 'status' => 'not_available']);
+        CoverageArea::create(['region' => 'Kaskazini Pemba', 'status' => 'available']);
+
+        $this->assertSame(['Kaskazini Pemba'], CoverageArea::servedRegions());
+        $this->get('/coverage')->assertOk()
+            ->assertSeeInOrder(['Where we operate', 'Kaskazini Pemba', 'Zanzibar', 'Kusini Unguja'], false);
+        $this->postJson('/coverage/check', ['region' => 'Kusini Unguja'])->assertJson(['status' => 'not_available']);
+    }
+
+    public function test_map_link_preselects_the_region_in_the_checker(): void
+    {
+        $this->get('/coverage?region=Kaskazini+Pemba')->assertOk()
+            ->assertSee('<option value="Kaskazini Pemba" selected', false);
     }
 
     public function test_reseeding_keeps_settings_changed_by_admins(): void
